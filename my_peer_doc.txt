@@ -1,0 +1,326 @@
+Question 1:
+
+* We are given n x m grid , where 1 represents land and 0 represents the water. 
+* We have to find the size of the biggest river.
+* A river can twist and can have branches. 
+* If there is no river in grid return 0
+
+My solution:
+
+
+
+def dfs(node, grid):
+    x, y = node
+    grid[x][y] = 1
+    size = 0
+    n = len(grid)
+    m = len(grid[0])
+
+    for dx, dy in [(-1, 0), (1, 0), (0, 1), (0,-1)]:
+        new_x, new_y = x + dx, y+dy
+        if 0 <= new_x < n and 0 <= new_y < m and grid[new_x][new_y] == 0:
+            size += dfs((new_x, new_y), grid)
+    return size + 1
+
+
+def find_max_path(grid):
+    ans = 0
+    n = len(grid)
+    m = len(grid[0])
+    for i in range(n):
+        for j in range(m):
+            if grid[i][j] == 0:
+                ans = max(ans, dfs((i, j), grid))
+    return ans
+
+
+
+def main():
+
+    # input matrix representing land and river
+    grid = [ [0,1,1,1,1], [1, 1, 0, 0, 0], [1, 1, 1, 0, 1], [1, 1, 1, 0, 1] ]
+
+    print(find_max_path(grid))
+
+
+if __name__ == "__main__":
+    main()
+	
+Explanation:
+
+* Starting from the main function, I have hard coded the input for the grid.
+* Declared a variable "ans" in function find_max_path to store the result.
+* In this solution, the indices are passed as a tuple to the function being called.
+* And a list of four different tuples is created which is iterated over in a for loop to traverse all
+  four directions by adding the tuple values to the current index.
+* The condition for indices being out of bounds and value of the next grid index being 0 or 1 is also
+  evaluated in the current recursion.
+* Finally main function is called which further calls other functions.
+
+Complexity Analysis:
+
+Time Complexity: O(n*m)
+Space Complexity: O(n*m)
+
+Peer solutions review:
+
+1. Karan Bajaj
+
+def isSafe(grid,row,col,r,c):
+    if(r>=row or c>=col or r<0 or c<0 or grid[r][c]== 1 ):
+        return False
+    return True
+
+def dfsTraverse(grid, row, col, r, c):
+
+    #Checking for corner cases
+    if not isSafe(grid, row, col, r, c):
+        return 0
+
+    #Making the current cell as 1 to avoid infinite calling during the below recursive calls for checking for
+    # left right down and up cell
+    grid[r][c]=1
+    #left
+    left=dfsTraverse(grid, row, col, r, c - 1)
+    #right
+    right=dfsTraverse(grid, row, col, r, c + 1)
+    #up
+    up=dfsTraverse(grid, row, col, r - 1, c)
+    #Down
+    down=dfsTraverse(grid, row, col, r + 1, c)
+
+    return 1+left+right+up+down
+
+
+def main():
+    grid=[[0,1,0,1,1], [1, 1, 0, 0, 0], [1, 1, 1, 1, 0], [1, 1, 1, 0, 0]]
+    row=len(grid)
+    col=len(grid[0])
+    result=0
+    for r in range(row):
+        for c in range(col):
+            if(grid[r][c] == 0):
+                result=max(result,dfsTraverse(grid,row,col,r,c))
+    print(result)
+
+if __name__=="__main__":
+    main()
+
+
+
+
+The difference:
+
+* The solution is quite similar as this code also implements a depth first search algorithm.
+* But in this solution, the indices are passed as a tuple to the function being called.
+* And a list of four different tuples is created which is iterated over in a for loop to traverse all
+  four directions by adding the tuple values to the current index.
+* The condition for indices being out of bounds and value of the next grid index being 0 or 1 is also
+  evaluated in the current recursion.
+* The main function is not defined or called instead the "find_max_path" function is directly called in   the print statement.
+  
+2. Atul Singh's solution
+
+
+
+def dfs(grid , i,j,n,m):
+        if i<0 or j<0 or i>=n or j>=m or grid[i][j]==2 or grid[i][j]==1:
+            return 0
+
+        grid[i][j] =2
+
+        a= dfs(grid, i+1, j, n, m)
+        b= dfs(grid, i-1, j, n, m)
+        c=dfs(grid, i, j+1, n, m)
+        d=dfs(grid, i, j-1, n, m)
+        return 1+a+b+c+d
+
+
+def max_path(grid):
+    n= len(grid)
+    m= len(grid[0])
+    ans =0
+
+    for i in range(n):
+        for j in range(m):
+            if(grid[i][j]==0):
+                ans = max(ans,dfs(grid,i,j,n,m))
+
+
+    return ans
+
+lst = [[1,0,0,0,1]]
+
+print(max_path(lst))
+
+
+
+His also:
+
+1. Created function name max_path which takes grid as the
+argument.
+2. When I get water which is ‘0’ then recursively call the dfs
+function for every four directions.
+3. And when I call this dfs function in the main function
+traversing updating the max value to maximum island after all
+the iteration.
+
+
+
+
+
+
+
+
+
+
+
+
+Question 2:
+
+* Design a logger system that receives a stream of messages along with their timestamps. 
+* Each unique message should only be printed at most every 10 seconds (i.e. a message printed at          timestamp t will prevent other identical messages from being printed until timestamp t + 10).
+* All messages will come in chronological order. Several messages may arrive at the same timestamp.
+* Implement the Logger class:
+  * Logger() Initializes the logger object.
+  * bool shouldPrintMessage(int timestamp, String message) Returns true if the message should be            printed in the given, otherwise returns false.
+  
+My solution:
+
+
+
+class Logger(object):
+
+    def _init_(self):
+        """
+        Initialize your data structure here.
+        """
+        self._msg_set = set()
+        self._msg_queue = deque()
+    
+    def shouldPrintMessage(self, timestamp, message):
+        """
+        Returns true if the message should be printed in the given timestamp, otherwise returns false.
+        """
+        while self._msg_queue:
+            msg, ts = self._msg_queue[0]
+            if timestamp - ts >= 10:
+                self._msg_queue.popleft()
+                self._msg_set.remove(msg)
+            else:
+                break
+        
+        if message not in self._msg_set:
+            self._msg_set.add(message)
+            self._msg_queue.append((message, timestamp))
+            return True
+        else:
+            return False
+			
+
+
+	
+Explanation:
+
+* This solution uses a deque from collections module.
+* Here a set and a deque is declared to be the instance' variable.
+* The main difference here is that whenever "shouldPrintMessage" is called, a while loop iterates over
+  the deque and removes all the elements from the deque and the set, wherever the difference of           timestamp of the elements in the deque and the current message being passed is greater than or equal    to 10.
+* This means that the messages being inserted in the deque and the set are in the order of increasing 
+  timestamps.
+* And this ensures that the timestamp of the messages deleted will have at least a difference of 10 
+  with the timestamps of the incoming messages.
+* After the while loop breaks out, the function checks if the current message is present in the set,      and if not present, the message is inserted in the set and appended in deque along with its             timestamp and True is returned.
+* Otherwise a False is returned.
+
+Complexity Analysis:
+
+Time Complexity: O(n), for n incoming messages
+Space Complexity: O(n), for n incoming messages
+
+Peer solutions review:
+
+1. Atul Singh solution
+
+
+
+class Logger:
+
+    def __init__(self):
+        self.msg ={}
+
+    def shouldPrintMessage(self, timestamp, message):
+
+        if message not in self.msg:
+            self.msg[message] = timestamp
+            return True
+
+        if self.msg[message] + 10 <= timestamp:
+            self.msg[message] = timestamp
+            return True
+        else:
+            return False
+
+logger = Logger()
+
+print(logger.shouldPrintMessage(10, "foo"))
+
+
+
+
+The difference:
+
+1.Creatingtheclassloggerwhichisgiveninthequestion.
+2. Having a constructor method in class self.msg={}.
+3. And Also Initialising the method inside the class which
+shouldPrintMessage(timestamp,message).
+4. This above method takes two parameters: timestamp ,
+message.
+5. And inside this method checking whether the message is
+present or not if not present in the msg dict then updating the
+values and returning true.
+6. If present then it should present after 10 seconds and this will
+return true. Else it would return false.
+
+2. Karan Bajaj' solution
+
+
+
+
+class logger:
+    output_list=[]
+    def __init__(self):
+        self.message_dict={}
+        self.output_list.append('null')
+
+    def shouldPrintMessage(self,timestamp,message):
+        # print(timestamp,message)
+        if message not in self.message_dict:
+            self.message_dict[message]=timestamp
+            return True
+        elif self.message_dict[message]+10<=timestamp:
+            self.message_dict[message]=timestamp
+            return True
+        else:
+            return False
+
+def main():
+    log_obj=logger()
+    a=[[],[1, "foo"], [2, "bar"], [3, "foo"], [8, "bar"], [10, "foo"], [11, "foo"]]
+    for item in a:
+        if item:
+            log_obj.output_list.append(log_obj.shouldPrintMessage(item[0],item[1]))
+
+    print(log_obj.output_list)
+
+if __name__=='__main__':
+    main()
+
+
+
+
+
+The difference:
+
+* This solution is quite similar to Atul's except there isn't a list as an instance variable to store history. 
+* There isn't a main function.
